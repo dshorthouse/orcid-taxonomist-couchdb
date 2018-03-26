@@ -156,12 +156,12 @@ class OrcidTaxonomist
       start = 1
 
       loop do
-        orcid_search_url = "#{ORCID_API}/search?q=#{keyword_parameter}&start=#{start}&rows=100"
+        orcid_search_url = "#{ORCID_API}/search?q=#{keyword_parameter}&start=#{start}&rows=200"
         req = Typhoeus.get(orcid_search_url, headers: orcid_header)
         results = JSON.parse(req.body, symbolize_names: true)[:result]
         if results
           results.map { |item| yielder << item[:"orcid-identifier"][:path] }
-          start += 100
+          start += 200
         else
           raise StopIteration
         end

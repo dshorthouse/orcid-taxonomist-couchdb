@@ -36,6 +36,7 @@ html
             el.html(el.html()+' ('+numTaxonomists[code]+')');
           },
           onRegionClick: function(e, code) {
+            $('#taxonomists_filter').find('input').val(countryNames[code]);
             table.search(countryNames[code]).draw();
           }
         });
