@@ -1,0 +1,76 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    activesupport (5.1.5)
+      concurrent-ruby (~> 1.0, >= 1.0.2)
+      i18n (~> 0.7)
+      minitest (~> 5.1)
+      tzinfo (~> 1.1)
+    byebug (10.0.0)
+    colorize (0.8.1)
+    concurrent-ruby (1.0.5)
+    couchrest (2.0.1)
+      httpclient (~> 2.8)
+      mime-types (>= 1.15)
+      multi_json (~> 1.7)
+    diff-lcs (1.3)
+    ethon (0.11.0)
+      ffi (>= 1.3.0)
+    ffi (1.9.21)
+    httpclient (2.8.3)
+    i18n (0.9.5)
+      concurrent-ruby (~> 1.0)
+    iso_country_codes (0.7.8)
+    mime-types (3.1)
+      mime-types-data (~> 3.2015)
+    mime-types-data (3.2016.0521)
+    minitest (5.11.3)
+    multi_json (1.13.1)
+    rake (12.3.0)
+    rspec (3.7.0)
+      rspec-core (~> 3.7.0)
+      rspec-expectations (~> 3.7.0)
+      rspec-mocks (~> 3.7.0)
+    rspec-core (3.7.1)
+      rspec-support (~> 3.7.0)
+    rspec-expectations (3.7.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.7.0)
+    rspec-mocks (3.7.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.7.0)
+    rspec-support (3.7.1)
+    slim (3.0.9)
+      temple (>= 0.7.6, < 0.9)
+      tilt (>= 1.3.3, < 2.1)
+    sort_alphabetical (1.1.0)
+      unicode_utils (>= 1.2.2)
+    temple (0.8.0)
+    thread_safe (0.3.6)
+    tilt (2.0.8)
+    typhoeus (1.3.0)
+      ethon (>= 0.9.0)
+    tzinfo (1.2.5)
+      thread_safe (~> 0.1)
+    unicode_utils (1.4.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  activesupport
+  byebug
+  colorize
+  couchrest
+  iso_country_codes
+  rake
+  rspec
+  slim
+  sort_alphabetical
+  typhoeus
+
+RUBY VERSION
+   ruby 2.4.1p111
+
+BUNDLED WITH
+   1.16.1
