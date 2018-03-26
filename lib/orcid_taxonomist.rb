@@ -3,7 +3,7 @@
 class OrcidTaxonomist
 
   ORCID_API = "https://pub.orcid.org/v2.1"
-  ORCID_KEYWORDS = ["taxonomy", "taxonomist"]
+  ORCID_KEYWORDS = ["taxonomy", "taxonomist", "nomenclature", "systematics"]
   GNRD_API = "http://gnrd.globalnames.org/name_finder.json"
 
   def initialize args

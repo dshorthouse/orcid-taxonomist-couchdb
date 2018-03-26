@@ -1,45 +1,20 @@
 doctype html
 html
   head
-    title World Taxonomists
+    title World Taxonomists and Systematists
     meta charset="utf-8"
     meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"
     meta name="ROBOTS" content="NOINDEX, NOFOLLOW"
     link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"
     link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap.min.css"
     link rel="stylesheet" href="css/jquery-jvectormap-2.0.3.css"
+    link rel="stylesheet" href="css/stylesheet.css"
     script src="https://code.jquery.com/jquery-1.12.4.js"
     script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"
     script src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap.min.js"
     script src="js/jquery-jvectormap-2.0.3.min.js"
     script src="js/jquery-jvectormap-world-mill.js"
-    css:
-      .orcid{vertical-align:middle; margin-right:4px;}
-      #connect-orcid-button{
-      	border: 1px solid #D3D3D3;
-      	padding: .3em;
-      	background-color: #fff;
-      	border-radius: 8px;
-      	box-shadow: 1px 1px 3px #999;
-      	cursor: pointer;
-      	color: #999;
-      	font-weight: bold;
-      	font-size: .8em;
-      	line-height: 24px;
-      	vertical-align: middle;
-      }
 
-      #connect-orcid-button:hover{
-      	border: 1px solid #338caf;
-      	color: #338caf;
-      }
-
-      #orcid-id-logo{
-      	display: block;
-      	margin: 0 .5em 0 0;
-      	padding: 0;
-      	float: left;
-      }
     javascript:
       var numTaxonomists = #{{country_counts}};
       var countryNames = #{{country_names}};
@@ -69,15 +44,19 @@ html
   body
     .container-fluid
       .jumbotron.row
-        h1 World Taxonomists
+        h1 World Taxonomists & Systematists
         .col-sm-6
           p.lede
-            | This proof-of-concept is a small but ever-growing compendium of the world's active taxonomists that have an 
+            | This proof-of-concept is a small but ever-growing compendium of the world's active taxonomists and systematists that have an 
             a href="https://orcid.org" ORCID
             |  account with the self-assigned keyword 
             em taxonomist
-            |  or 
+            | , 
             em taxonomy
+            | , 
+            em nomenclature
+            | , or 
+            em systematics
             | . Their taxa of specialty are found from the titles of their linked works using the 
             a href="http://gnrd.globalnames.org" Global Names Recognition and Discovery
             |  service. The code that generates this list can be found 
