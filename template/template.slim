@@ -10,6 +10,7 @@ html
     link rel="stylesheet" href="css/jquery-jvectormap-2.0.3.css"
     link rel="stylesheet" href="css/stylesheet.css"
     script src="https://code.jquery.com/jquery-1.12.4.js"
+    script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"
     script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"
     script src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap.min.js"
     script src="js/jquery-jvectormap-2.0.3.min.js"
@@ -25,6 +26,7 @@ html
         });
         $('#world-map').vectorMap({
           map: 'world_mill',
+          backgroundColor: '#eee',
           series: {
             regions: [{
               values: numTaxonomists,
@@ -38,19 +40,23 @@ html
           onRegionClick: function(e, code) {
             $('#taxonomists_filter').find('input').val(countryNames[code]);
             table.search(countryNames[code]).draw();
+            $('#map-modal').modal('toggle');
           }
         });
+        $('#map-modal').on('shown.bs.modal', function (e) {
+          $('#world-map').vectorMap('get','mapObject').updateSize();
+        })
       });
 
   body
     .container-fluid
-      .jumbotron.row
+      .jumbotron
         h1 World Taxonomists & Systematists
-        .col-sm-6
-          p.lede
-            | This proof-of-concept is a small but ever-growing compendium of the world's active taxonomists and systematists that have an 
-            a href="https://orcid.org" ORCID
-            |  account with the self-assigned keyword 
+        p.lede
+          | This proof-of-concept is a small but ever-growing compendium of the world's active taxonomists and systematists that have an 
+          a href="https://orcid.org" ORCID
+          |  account with the self-assigned keyword 
+          a href="https://orcid.org/orcid-search/quick-search/?searchQuery=keyword:taxonomy%20OR%20keyword:taxonomist%20OR%20keyword:systematics%20OR%20keyword:nomenclature"
             em taxonomist
             | , 
             em taxonomy
@@ -58,25 +64,24 @@ html
             em nomenclature
             | , or 
             em systematics
-            | . Their taxa of specialty are found from the titles of their linked works using the 
-            a href="http://gnrd.globalnames.org" Global Names Recognition and Discovery
-            |  service. The code that generates this list can be found 
-            a href="https://github.com/dshorthouse/orcid-taxonomist-couchdb" here
-            | .
-          p.lede
-            | Current total: 
-            strong #{entries.count}
-            br
-            | Started 2018-03-19 in the spirit of  
-            a href="https://twitter.com/hashtag/taxonomistappreciationday" #TaxonomistAppreciationDay
-            | , new records added once a day and all records updated once a week.
-          p.lede
-            a href="https://orcid.org/"
-              button id="connect-orcid-button"
-                img id="orcid-id-logo" src="https://orcid.org/sites/default/files/images/orcid_24x24.png" width="24" height="24" alt="ORCID logo" 
-                  | Create your ORCID iD
-        .col-sm-4
-          #world-map(style="width: 600px; height: 350px")
+          | . Their taxa of specialty are found from the titles of their linked works using the 
+          a href="http://gnrd.globalnames.org" Global Names Recognition and Discovery
+          |  service. The code that generates this list can be found 
+          a href="https://github.com/dshorthouse/orcid-taxonomist-couchdb" here
+          | .
+        p.lede
+          | Current total: 
+          strong #{entries.count}
+          br
+          | Started 2018-03-19 in the spirit of  
+          a href="https://twitter.com/hashtag/taxonomistappreciationday" #TaxonomistAppreciationDay
+          | , new records added once a day and all records updated once a week.
+        p.lede
+          a href="https://orcid.org/"
+            button id="connect-orcid-button"
+              img id="orcid-id-logo" src="https://orcid.org/sites/default/files/images/orcid_24x24.png" width="24" height="24" alt="ORCID logo" 
+                | Create your ORCID iD
+          button.btn.btn-primary id="map-button" type="button" data-toggle="modal" data-target="#map-modal" Show map
 
       table#taxonomists.table.table-striped.table-bordered
         thead
@@ -95,3 +100,15 @@ html
               td = entry[:taxa]
               td
                 a href="https://orcid.org/#{entry[:orcid]}" https://orcid.org/#{entry[:orcid]}
+
+      #map-modal.modal.fade tabindex="-1" role="dialog" aria-labelledby="mapLabel"
+        .modal-dialog role="document"
+          .modal-content(style="width:625px")
+            .modal-header
+              button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                span aria-hidden="true" &times;
+              h4.modal-title id="mapLabel" World Counts
+            .modal-body(style="width: 625px; height: 420px")
+              #world-map(style="width: 600px; height: 400px")
+            .modal-footer
+              button.btn.btn-default type="button" data-dismiss="modal" Close

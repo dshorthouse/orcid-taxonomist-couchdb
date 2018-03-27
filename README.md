@@ -1,5 +1,8 @@
 ORCID Taxonomist
 ===============================================
+
+[![DOI](https://zenodo.org/badge/126773540.svg)](https://zenodo.org/badge/latestdoi/126773540)
+
 Ruby application that queries the ORCID API for user profiles containing keyword 'taxonomist', 'taxonomy', 'nomenclature', or 'systematics' then feeds the titles of their linked works to the Global Names Recognition and Discovery service to indicate the ORCID account holder's area of taxonomic expertise.
 
 Requirements

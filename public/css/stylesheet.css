@@ -24,3 +24,23 @@
 	padding: 0;
 	float: left;
 }
+
+#map-button{
+  margin-left:10px;
+	border: 1px solid #D3D3D3;
+	padding: .3em;
+	background-color: #fff;
+	border-radius: 8px;
+	box-shadow: 1px 1px 3px #999;
+	cursor: pointer;
+	color: #999;
+	font-weight: bold;
+	font-size: .8em;
+	line-height: 24px;
+	vertical-align: middle;
+}
+
+#map-button:hover{
+	border: 1px solid #338caf;
+	color: #338caf;
+}
