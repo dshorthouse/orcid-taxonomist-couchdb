@@ -62,6 +62,7 @@ class OrcidTaxonomist
                         .map{|t| [t["key"],t["value"]]}.to_h
     country_names = country_counts.keys.map{|t| [t, IsoCountryCodes.find(t).name]}.to_h
     output = {
+      google_analytics: @config[:google_analytics],
       country_counts: country_counts.to_json,
       country_names: country_names.to_json,
       entries: []

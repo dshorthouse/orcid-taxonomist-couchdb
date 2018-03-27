@@ -1,11 +1,14 @@
 development:
   server: 'http://127.0.0.1:5984'
   database: orcid_taxonomist
+  google_analytics: 'UA-XXXXXX-XX'
 
 test:
   server: 'http://127.0.0.1:5984'
   database: orcid_taxonomist
+  google_analytics: 'UA-XXXXXX-XX'
 
 production:
   server: 'http://127.0.0.1:5984'
   database: orcid_taxonomist
+  google_analytics: 'UA-XXXXXX-XX'
