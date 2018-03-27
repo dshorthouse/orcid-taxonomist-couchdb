@@ -46,8 +46,8 @@ if options[:init]
   puts "Done".green
 else
   if options[:search]
-#    ot.populate_taxonomists
-#    ot.populate_taxa
+    ot.populate_taxonomists
+    ot.populate_taxa
     ot.write_webpage
     puts "Done".green
   end
