@@ -44,3 +44,9 @@
 	border: 1px solid #338caf;
 	color: #338caf;
 }
+
+.id-icon{
+  margin: 0 0.2em 0.2em 0;
+  vertical-align:middle;
+  border-style:none;
+}
