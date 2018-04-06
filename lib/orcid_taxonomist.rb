@@ -90,6 +90,7 @@ class OrcidTaxonomist
       if doc["orcid_updated"] != o[:orcid_updated]
         doc["given_names"] = o[:given_names]
         doc["family_name"] = o[:family_name]
+        doc["country"] = o[:country]
         doc["orcid_updated"] = o[:orcid_updated]
         works = orcid_works(row["orcid"])
         if works
