@@ -59,8 +59,8 @@ class OrcidTaxonomist
 
   def write_webpage
     country_counts = @db.view('taxonomist/by_country', :group_level => 1)['rows']
-                        .map{|t| [t["key"],t["value"]]}.to_h
-    country_names = country_counts.keys.map{|t| [t, IsoCountryCodes.find(t).name]}.to_h
+                        .map{ |t| [t["key"],t["value"]] }.to_h
+    country_names = country_counts.keys.map{ |t| [t, IsoCountryCodes.find(t).name] }.to_h
     output = {
       google_analytics: @config[:google_analytics],
       country_counts: country_counts.to_json,
@@ -138,21 +138,22 @@ class OrcidTaxonomist
     orcid_url = "#{ORCID_API}/#{orcid}/works"
     req = Typhoeus.get(orcid_url, headers: orcid_header)
     json = JSON.parse(req.body, symbolize_names: true)
-    json[:group].map{|a| a[:"work-summary"][0][:title][:title][:value]} rescue []
+    json[:group].map{ |a| a[:"work-summary"][0][:title][:title][:value] } rescue []
   end
 
   def gnrd_names(text)
     begin
-      req = Typhoeus.post(GNRD_API, body: { text: text, unique: true }, followlocation: true)
+      body = { text: text, unique: true }
+      req = Typhoeus.post(GNRD_API, body: body, followlocation: true)
       json = JSON.parse(req.body, symbolize_names: true)
-      json[:names].map{|o| o[:scientificName]}.compact.uniq.sort
+      json[:names].map{ |o| o[:scientificName] }.compact.uniq.sort
     rescue
       []
     end
   end
 
   def search_orcids
-    keyword_parameter = URI::encode(ORCID_KEYWORDS.map{|k| "keyword:#{k}"}.join(" OR "))
+    keyword_parameter = URI::encode(ORCID_KEYWORDS.map{ |k| "keyword:#{k}" }.join(" OR "))
     Enumerator.new do |yielder|
       start = 1
 
@@ -171,16 +172,19 @@ class OrcidTaxonomist
   end
 
   def new_orcids
-    @db.view('taxonomist/by_new_taxonomists_orcid')['rows'].map{|t| t["value"]}.compact
+    @db.view('taxonomist/by_new_taxonomists_orcid')['rows']
+       .map{|t| t["value"]}.compact
   end
 
   def all_taxonomists
-    @db.view('taxonomist/by_updated_taxonomists')['rows'].map{|t| t["value"]}.compact
+    @db.view('taxonomist/by_updated_taxonomists')['rows']
+       .map{|t| t["value"]}.compact
        .sort_alphabetical_by{|k| k["family_name"]}
   end
 
   def existing_orcids
-    @db.all_docs["rows"].map{|d| d["id"] if d["id"][0] != "_"}.compact
+    @db.all_docs["rows"]
+       .map{|d| d["id"] if d["id"][0] != "_"}.compact
   end
 
 end

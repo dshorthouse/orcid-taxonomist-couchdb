@@ -15,5 +15,4 @@ end
 group :test, :development do
   gem 'rake'
   gem 'rspec'
-  gem 'byebug'
 end

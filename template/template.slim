@@ -1,5 +1,5 @@
 doctype html
-html
+html lang="en"
   head
     title World Taxonomists and Systematists
     meta charset="utf-8"
@@ -21,32 +21,33 @@ html
       var numTaxonomists = #{{country_counts}};
       var countryNames = #{{country_names}};
       $(function() {
-        var searchText = getUrlParam("q");
         var table = $('#taxonomists').DataTable({
           order: [[1, "asc"]],
           "pageLength": 100
         });
-        $('#world-map').vectorMap({
-          map: 'world_mill',
-          backgroundColor: '#eee',
-          series: {
-            regions: [{
-              values: numTaxonomists,
-              scale: ['#C8EEFF', '#0071A4'],
-              normalizeFunction: 'polynomial'
-            }]
-          },
-          onRegionTipShow: function(e, el, code) {
-            el.html(el.html()+' ('+numTaxonomists[code]+')');
-          },
-          onRegionClick: function(e, code) {
-            $('#taxonomists_filter').find('input').val(countryNames[code]);
-            table.search(countryNames[code]).draw();
-            $('#map-modal').modal('toggle');
-          }
-        });
         $('#map-modal').on('shown.bs.modal', function (e) {
-          $('#world-map').vectorMap('get','mapObject').updateSize();
+          var map = $('#world-map')
+          if (map.children().length === 0) {
+              map.vectorMap({
+                map: 'world_mill',
+                backgroundColor: '#eee',
+                series: {
+                  regions: [{
+                    values: numTaxonomists,
+                    scale: ['#C8EEFF', '#0071A4'],
+                    normalizeFunction: 'polynomial'
+                  }]
+                },
+                onRegionTipShow: function(e, el, code) {
+                  el.html(el.html()+' ('+numTaxonomists[code]+')');
+                },
+                onRegionClick: function(e, code) {
+                  $('#taxonomists_filter').find('input').val(countryNames[code]);
+                  table.search(countryNames[code]).draw();
+                  $('#map-modal').modal('toggle');
+                }
+              });
+          }
         });
       });
       window.dataLayer = window.dataLayer || [];
@@ -83,10 +84,9 @@ html
           a href="https://twitter.com/hashtag/taxonomistappreciationday" #TaxonomistAppreciationDay
           | , new records added once a day and all records updated once a week.
         p.lede
-          a href="https://orcid.org/"
-            button id="connect-orcid-button"
-              img id="orcid-id-logo" src="https://orcid.org/sites/default/files/images/orcid_24x24.png" width="24" height="24" alt="ORCID logo" 
-                | Create your ORCID iD
+          button id="connect-orcid-button" onclick="window.location.href='https://orcid.org/'"
+            img id="orcid-id-logo" src="https://orcid.org/sites/default/files/images/orcid_24x24.png" width="24" height="24" alt="ORCID logo" 
+            | Create your ORCID iD
           button.btn.btn-primary id="map-button" type="button" data-toggle="modal" data-target="#map-modal" Show map
 
       table#taxonomists.table.table-striped.table-bordered
