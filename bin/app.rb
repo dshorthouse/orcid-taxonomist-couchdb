@@ -49,12 +49,14 @@ else
     ot.populate_taxonomists
     ot.populate_taxa
     ot.write_webpage
+    ot.write_csv
     puts "Done".green
   end
 
   if options[:update]
     ot.update_taxonomists
     ot.write_webpage
+    ot.write_csv
     puts "Done".green
   end
 end

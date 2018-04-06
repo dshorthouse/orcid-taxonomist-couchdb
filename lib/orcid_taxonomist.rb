@@ -57,25 +57,17 @@ class OrcidTaxonomist
     end
   end
 
-  def write_webpage
-    country_counts = @db.view('taxonomist/by_country', :group_level => 1)['rows']
-                        .map{ |t| [t["key"],t["value"]] }.to_h
-    country_names = country_counts.keys.map{ |t| [t, IsoCountryCodes.find(t).name] }.to_h
-    output = {
-      google_analytics: @config[:google_analytics],
-      country_counts: country_counts.to_json,
-      country_names: country_names.to_json,
-      entries: []
-    }
-    all_taxonomists.each do |row|
-      row.symbolize_keys!
-      if row[:country]
-        code = IsoCountryCodes.find(row[:country])
-        row[:country] = code.name if code
+  def write_csv
+    csv_file = File.join(root, 'public', 'taxonomists.csv')
+    CSV.open(csv_file, 'w') do |csv|
+      csv << ["given_names", "family_name", "orcid", "country", "taxa"]
+      output[:entries].each do |entry|
+        csv << [entry[:given_names], entry[:family_name], entry[:orcid], entry[:country], entry[:taxa]]
       end
-      row[:taxa] = row[:taxa].join(", ")
-      output[:entries] << row
     end
+  end
+
+  def write_webpage
     template = File.join(root, 'template', "template.slim")
     web_page = File.join(root, 'public', 'index.html')
     html = Slim::Template.new(template).render(Object.new, output)
@@ -186,6 +178,28 @@ class OrcidTaxonomist
   def existing_orcids
     @db.all_docs["rows"]
        .map{|d| d["id"] if d["id"][0] != "_"}.compact
+  end
+
+  def output
+    country_counts = @db.view('taxonomist/by_country', :group_level => 1)['rows']
+                        .map{ |t| [t["key"],t["value"]] }.to_h
+    country_names = country_counts.keys.map{ |t| [t, IsoCountryCodes.find(t).name] }.to_h
+    data = {
+      google_analytics: @config[:google_analytics],
+      country_counts: country_counts.to_json,
+      country_names: country_names.to_json,
+      entries: []
+    }
+    all_taxonomists.each do |row|
+      row.symbolize_keys!
+      if row[:country]
+        code = IsoCountryCodes.find(row[:country])
+        row[:country] = code.name if code
+      end
+      row[:taxa] = row[:taxa].join(", ")
+      data[:entries] << row
+    end
+    data
   end
 
 end
