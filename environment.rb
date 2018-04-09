@@ -11,5 +11,6 @@ require 'iso_country_codes'
 require 'date'
 require 'couchrest'
 require 'sort_alphabetical'
+require 'byebug'
 
 Dir[File.dirname(__FILE__) + "/lib/*.rb"].each{ |file| require file }

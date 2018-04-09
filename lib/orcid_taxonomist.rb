@@ -35,6 +35,7 @@ class OrcidTaxonomist
         "orcid" => orcid,
         "given_names" => o[:given_names],
         "family_name" => o[:family_name],
+        "other_names" => o[:other_names],
         "country" => o[:country],
         "orcid_created" => o[:orcid_created],
         "orcid_updated" => o[:orcid_updated],
@@ -75,6 +76,26 @@ class OrcidTaxonomist
     html
   end
 
+  def update_taxonomist(orcid)
+    o = orcid_metadata(orcid)
+    doc = @db.get(orcid) || { 
+      "_id" => orcid, 
+      "orcid" => orcid, 
+      "status" => 1, 
+      "orcid_created" => o[:orcid_created]
+    }
+    doc["given_names"] = o[:given_names]
+    doc["family_name"] = o[:family_name]
+    doc["other_names"] = o[:other_names]
+    doc["country"] = o[:country]
+    doc["orcid_updated"] = o[:orcid_updated]
+    works = orcid_works(orcid)
+    if works
+      doc["taxa"] = gnrd_names(works.join(" "))
+    end
+    @db.save_doc(doc)
+  end
+
   def update_taxonomists
     all_taxonomists.each do |row|
       doc = @db.get(row["orcid"])
@@ -82,6 +103,7 @@ class OrcidTaxonomist
       if doc["orcid_updated"] != o[:orcid_updated]
         doc["given_names"] = o[:given_names]
         doc["family_name"] = o[:family_name]
+        doc["other_names"] = o[:other_names]
         doc["country"] = o[:country]
         doc["orcid_updated"] = o[:orcid_updated]
         works = orcid_works(row["orcid"])
@@ -115,12 +137,14 @@ class OrcidTaxonomist
     json = JSON.parse(req.body, symbolize_names: true)
     given_names = json[:name][:"given-names"][:value] rescue nil
     family_name = json[:name][:"family-name"][:value] rescue nil
+    other_names = json[:"other-names"][:"other-name"].map{|o| o[:content]}.join("; ") rescue nil
     country = json[:addresses][:address][0][:country][:value] rescue nil
     orcid_created = json[:name][:"created-date"][:value] rescue nil
     orcid_updated = json[:"last-modified-date"][:value] rescue nil
     {
       given_names: given_names,
       family_name: family_name,
+      other_names: other_names,
       country: country,
       orcid_created: orcid_created,
       orcid_updated: orcid_updated

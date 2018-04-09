@@ -8,6 +8,7 @@ gem 'slim'
 gem 'colorize'
 gem 'iso_country_codes'
 gem 'sort_alphabetical'
+gem 'byebug'
 
 group :production do
 end
