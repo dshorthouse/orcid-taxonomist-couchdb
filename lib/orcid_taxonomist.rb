@@ -76,6 +76,11 @@ class OrcidTaxonomist
     html
   end
 
+  def delete_taxonomist(orcid)
+    doc = @db.get(orcid)
+    @db.delete_doc(doc)
+  end
+
   def update_taxonomist(orcid)
     o = orcid_metadata(orcid)
     doc = @db.get(orcid) || { 
@@ -84,16 +89,7 @@ class OrcidTaxonomist
       "status" => 1, 
       "orcid_created" => o[:orcid_created]
     }
-    doc["given_names"] = o[:given_names]
-    doc["family_name"] = o[:family_name]
-    doc["other_names"] = o[:other_names]
-    doc["country"] = o[:country]
-    doc["orcid_updated"] = o[:orcid_updated]
-    works = orcid_works(orcid)
-    if works
-      doc["taxa"] = gnrd_names(works.join(" "))
-    end
-    @db.save_doc(doc)
+    @db.save_doc(update_doc(doc, o))
   end
 
   def update_taxonomists
@@ -101,16 +97,7 @@ class OrcidTaxonomist
       doc = @db.get(row["orcid"])
       o = orcid_metadata(row["orcid"])
       if doc["orcid_updated"] != o[:orcid_updated]
-        doc["given_names"] = o[:given_names]
-        doc["family_name"] = o[:family_name]
-        doc["other_names"] = o[:other_names]
-        doc["country"] = o[:country]
-        doc["orcid_updated"] = o[:orcid_updated]
-        works = orcid_works(row["orcid"])
-        if works
-          doc["taxa"] = gnrd_names(works.join(" "))
-        end
-        @db.save_doc(doc)
+        @db.save_doc(update_doc(doc, o))
       end
     end
   end
@@ -186,6 +173,19 @@ class OrcidTaxonomist
         end
       end
     end.lazy
+  end
+
+  def update_doc(doc, o)
+    doc["given_names"] = o[:given_names]
+    doc["family_name"] = o[:family_name]
+    doc["other_names"] = o[:other_names]
+    doc["country"] = o[:country]
+    doc["orcid_updated"] = o[:orcid_updated]
+    works = orcid_works(o[:orcid])
+    if works
+      doc["taxa"] = gnrd_names(works.join(" "))
+    end
+    doc
   end
 
   def new_orcids

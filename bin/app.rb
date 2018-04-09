@@ -34,6 +34,10 @@ optparse = OptionParser.new do |opts|
     options[:orcids] = orcids
   end
 
+  opts.on("-d", "--delete [ORCID]" String, "Delete a single ORCID") do |orcid|
+    options[:delete] = orcid
+  end
+
   opts.on("-u", "--update", "Update all existing records") do
     options[:update] = true
   end
@@ -52,6 +56,11 @@ elsif options[:orcids]
   options.each do |orcid|
     ot.update_taxonomist(orcid)
   end
+  ot.write_webpage
+  ot.write_csv
+  puts "Done".green
+elsif options[:delete]
+  ot.delete_taxonomist(options[:delete])
   ot.write_webpage
   ot.write_csv
   puts "Done".green
