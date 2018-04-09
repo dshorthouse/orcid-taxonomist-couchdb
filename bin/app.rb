@@ -30,8 +30,8 @@ optparse = OptionParser.new do |opts|
     options[:search] = true
   end
 
-  opts.on("-o", "--orcid [ORCID]", String, "Update existing ORCID record or save a new one") do |orcid|
-    options[:orcid] = orcid
+  opts.on("-o", "--orcids [ORCIDS]", Array, "Update existing ORCID records or save new ones") do |orcids|
+    options[:orcids] = orcids
   end
 
   opts.on("-u", "--update", "Update all existing records") do
@@ -48,8 +48,10 @@ ot = OrcidTaxonomist.new({ config_file: config_file })
 if options[:init]
   ot.create_design_document
   puts "Done".green
-elsif options[:orcid]
-  ot.update_taxonomist(options[:orcid])
+elsif options[:orcids]
+  options.each do |orcid|
+    ot.update_taxonomist(orcid)
+  end
   ot.write_webpage
   ot.write_csv
   puts "Done".green
