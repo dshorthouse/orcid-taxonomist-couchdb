@@ -99,15 +99,17 @@ html lang="en"
         thead
           tr
             th(style="width:10%") Given Names
-            th(style="width:15%") Family Name
+            th(style="width:10%") Family Name
+            th(style="width:10%") Other Names
             th{style="width:10%"} Country
-            th{style="width:40%"} Speciality
+            th{style="width:35%"} Speciality
             th(style="width:25%") ORCID
         tbody
           - entries.each do |entry|
             tr
               td = entry[:given_names]
               td = entry[:family_name]
+              td = entry[:other_names]
               td = entry[:country]
               td = entry[:taxa]
               td

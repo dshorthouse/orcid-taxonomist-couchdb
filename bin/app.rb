@@ -34,7 +34,7 @@ optparse = OptionParser.new do |opts|
     options[:orcids] = orcids
   end
 
-  opts.on("-d", "--delete [ORCID]" String, "Delete a single ORCID") do |orcid|
+  opts.on("-d", "--delete [ORCID]", String, "Delete a single ORCID") do |orcid|
     options[:delete] = orcid
   end
 
