@@ -129,6 +129,7 @@ class OrcidTaxonomist
     orcid_created = json[:name][:"created-date"][:value] rescue nil
     orcid_updated = json[:"last-modified-date"][:value] rescue nil
     {
+      orcid: orcid,
       given_names: given_names,
       family_name: family_name,
       other_names: other_names,
