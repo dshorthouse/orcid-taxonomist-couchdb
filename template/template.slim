@@ -23,7 +23,7 @@ html lang="en"
       $(function() {
         var table = $('#taxonomists').DataTable({
           order: [[1, "asc"]],
-          "pageLength": 100
+          pageLength: 100
         });
         $('#map-modal').on('shown.bs.modal', function (e) {
           var map = $('#world-map')

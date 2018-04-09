@@ -53,7 +53,7 @@ if options[:init]
   ot.create_design_document
   puts "Done".green
 elsif options[:orcids]
-  options.each do |orcid|
+  options[:orcids].each do |orcid|
     ot.update_taxonomist(orcid)
   end
   ot.write_webpage
