@@ -18,6 +18,7 @@ class OrcidTaxonomist
   def create_design_document
     des = CouchRest::Design.new
     des.name = "taxonomist"
+    des.merge!({"language" => "javascript"})
     new_taxonomist_map = "function(doc) { if(doc.status == 0) { emit(null, doc.orcid); } }"
     updated_taxonomist_map = "function(doc) { if(doc.status == 1) { emit(null, doc); } }"
     country_map = "function(doc) { emit(doc.country, 1); }"
