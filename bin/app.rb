@@ -78,8 +78,8 @@ elsif options[:delete]
   puts "Done".green
 else
   if options[:search]
-#    ot.populate_taxonomists
-#    ot.populate_taxa
+    ot.populate_taxonomists
+    ot.populate_taxa
     ot.write_webpage
     ot.write_csv
     puts "Done".green
