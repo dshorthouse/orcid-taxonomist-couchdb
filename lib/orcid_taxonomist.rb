@@ -20,9 +20,12 @@ class OrcidTaxonomist
     des.name = "taxonomist"
     new_taxonomist_map = "function(doc) { if(doc.status == 0) { emit(null, doc.orcid); } }"
     updated_taxonomist_map = "function(doc) { if(doc.status == 1) { emit(null, doc); } }"
+    country_map = "function(doc) { emit(doc.country, 1); }"
+    dois_map = "function(doc) { doc.dois && doc.dois.forEach(function(doi) { emit(doi, 1); }); }"
     des.view_by :new_taxonomists_orcid, :map => new_taxonomist_map
     des.view_by :updated_taxonomists, :map => updated_taxonomist_map
-    des.view_by :country, :map => "function(doc) { emit(doc.country, 1); }", :reduce => "_sum"
+    des.view_by :country, :map => country_map, :reduce => "_sum"
+    des.view_by :dois, :map => dois_map, :reduce => "_sum"
     des.database = @db
     des.save
   end
@@ -41,7 +44,8 @@ class OrcidTaxonomist
         "orcid_created" => o[:orcid_created],
         "orcid_updated" => o[:orcid_updated],
         "status" => 0,
-        "taxa" => []
+        "taxa" => [],
+        "dois" => []
       }
       @db.save_doc(doc)
     end
@@ -51,8 +55,9 @@ class OrcidTaxonomist
     new_orcids.each do |o|
       works = orcid_works(o)
       doc = @db.get(o)
-      if works
-        doc[:taxa] = gnrd_names(works.join(" "))
+      if works.size > 0
+        doc[:taxa] = gnrd_names(works.map{ |w| w[:title] }.join(" "))
+        doc[:dois] = works.map{ |w| w[:doi] }.compact
       end
       doc[:status] = 1
       @db.save_doc(doc)
@@ -125,7 +130,7 @@ class OrcidTaxonomist
     json = JSON.parse(req.body, symbolize_names: true)
     given_names = json[:name][:"given-names"][:value] rescue nil
     family_name = json[:name][:"family-name"][:value] rescue nil
-    other_names = json[:"other-names"][:"other-name"].map{|o| o[:content]}.join("; ") rescue nil
+    other_names = json[:"other-names"][:"other-name"].map{|o| o[:content]} rescue nil
     country = json[:addresses][:address][0][:country][:value] rescue nil
     orcid_created = json[:name][:"created-date"][:value] rescue nil
     orcid_updated = json[:"last-modified-date"][:value] rescue nil
@@ -144,7 +149,19 @@ class OrcidTaxonomist
     orcid_url = "#{ORCID_API}/#{orcid}/works"
     req = Typhoeus.get(orcid_url, headers: orcid_header)
     json = JSON.parse(req.body, symbolize_names: true)
-    json[:group].map{ |a| a[:"work-summary"][0][:title][:title][:value] } rescue []
+    begin
+      json[:group].map do |a|
+        ids = a[:"work-summary"][0][:"external-ids"][:"external-id"]
+        doi = ids.map{ |d| d[:"external-id-value"] if d[:"external-id-type"] == "doi" }
+                 .compact.first
+        {
+          title: a[:"work-summary"][0][:title][:title][:value],
+          doi: doi
+        }
+      end
+    rescue
+      []
+    end
   end
 
   def gnrd_names(text)
@@ -203,8 +220,9 @@ class OrcidTaxonomist
     doc["country"] = o[:country]
     doc["orcid_updated"] = o[:orcid_updated]
     works = orcid_works(o[:orcid])
-    if works
-      doc["taxa"] = gnrd_names(works.join(" "))
+    if works.size > 0
+      doc["taxa"] = gnrd_names(works.map{ |w| w[:title] }.join(" "))
+      doc["dois"] = works.map{ |w| w[:doi] }.compact
     end
     doc
   end
@@ -220,6 +238,11 @@ class OrcidTaxonomist
        .sort_alphabetical_by{|k| k["family_name"]}
   end
 
+  def all_dois
+    @db.view('taxonomist/by_dois', :group_level => 1)['rows']
+       .map{|d| d["key"]}
+  end
+
   def existing_orcids
     @db.all_docs["rows"]
        .map{|d| d["id"] if d["id"][0] != "_"}.compact
@@ -227,8 +250,8 @@ class OrcidTaxonomist
 
   def output
     country_counts = @db.view('taxonomist/by_country', :group_level => 1)['rows']
-                        .map{ |t| [t["key"],t["value"]] }.to_h
-    country_names = country_counts.keys.map{ |t| [t, IsoCountryCodes.find(t).name] }.to_h
+                        .map{ |t| [t["key"],t["value"]] }.to_h rescue {}
+    country_names = country_counts.keys.map{ |t| [t, IsoCountryCodes.find(t).name] }.to_h rescue {}
     data = {
       google_analytics: @config[:google_analytics],
       country_counts: country_counts.to_json,
@@ -242,6 +265,7 @@ class OrcidTaxonomist
         row[:country] = code.name if code
       end
       row[:taxa] = row[:taxa].join(", ")
+      row[:other_names] = row[:other_names].join("; ")
       data[:entries] << row
     end
     data
