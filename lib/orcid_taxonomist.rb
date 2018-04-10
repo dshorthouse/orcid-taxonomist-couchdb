@@ -149,18 +149,12 @@ class OrcidTaxonomist
     orcid_url = "#{ORCID_API}/#{orcid}/works"
     req = Typhoeus.get(orcid_url, headers: orcid_header)
     json = JSON.parse(req.body, symbolize_names: true)
-    begin
-      json[:group].map do |a|
-        ids = a[:"work-summary"][0][:"external-ids"][:"external-id"]
-        doi = ids.map{ |d| d[:"external-id-value"] if d[:"external-id-type"] == "doi" }
-                 .compact.first
-        {
-          title: a[:"work-summary"][0][:title][:title][:value],
-          doi: doi
-        }
-      end
-    rescue
-      []
+    json[:group].map do |a|
+      ids = a[:"work-summary"][0][:"external-ids"][:"external-id"] rescue []
+      doi = ids.map{ |d| d[:"external-id-value"] if d[:"external-id-type"] == "doi" }
+               .compact.first rescue nil
+      title = a[:"work-summary"][0][:title][:title][:value] rescue nil
+      { title: title, doi: doi }
     end
   end
 
