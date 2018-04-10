@@ -21,7 +21,7 @@ class OrcidTaxonomist
     des.merge!({"language" => "javascript"})
     new_taxonomist_map = "function(doc) { if(doc.status == 0) { emit(null, doc.orcid); } }"
     updated_taxonomist_map = "function(doc) { if(doc.status == 1) { emit(null, doc); } }"
-    country_map = "function(doc) { emit(doc.country, 1); }"
+    country_map = "function(doc) { if(doc.country) { emit(doc.country, 1); }}"
     dois_map = "function(doc) { doc.dois && doc.dois.forEach(function(doi) { emit(doi, 1); }); }"
     des.view_by :new_taxonomists_orcid, :map => new_taxonomist_map
     des.view_by :updated_taxonomists, :map => updated_taxonomist_map
@@ -249,8 +249,8 @@ class OrcidTaxonomist
 
   def output
     country_counts = @db.view('taxonomist/by_country', :group_level => 1)['rows']
-                        .map{ |t| [t["key"],t["value"]] }.to_h rescue {}
-    country_names = country_counts.keys.map{ |t| [t, IsoCountryCodes.find(t).name] }.to_h rescue {}
+                        .map{ |t| [t["key"],t["value"]] }.to_h
+    country_names = country_counts.keys.map{ |t| [t, IsoCountryCodes.find(t).name] }.to_h
     data = {
       google_analytics: @config[:google_analytics],
       country_counts: country_counts.to_json,
