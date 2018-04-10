@@ -3,9 +3,7 @@ var countryNames = {"AR":"Argentina","AT":"Austria","AU":"Australia","BD":"Bangl
 $(function() {
   var table = $('#taxonomists').DataTable({
     order: [[1, "asc"]],
-    pageLength: 100,
-    scrollY: "300px",
-    scrollCollapse: true
+    pageLength: 100
   });
   $('#map-modal').on('shown.bs.modal', function (e) {
     var map = $('#world-map')

@@ -30,6 +30,10 @@ optparse = OptionParser.new do |opts|
     options[:search] = true
   end
 
+  opts.on("-w", "--works [DOIS]", Array, "Add ORCID records based on search for DOI of works") do |works|
+    options[:works] = works
+  end
+
   opts.on("-o", "--orcids [ORCIDS]", Array, "Update existing ORCID records or save new ones") do |orcids|
     options[:orcids] = orcids
   end
@@ -51,6 +55,14 @@ ot = OrcidTaxonomist.new({ config_file: config_file })
 
 if options[:init]
   ot.create_design_document
+  puts "Done".green
+elsif options[:works]
+  options[:works].each do |doi|
+    ot.populate_taxonomists(doi)
+  end
+  ot.populate_taxa
+  ot.write_webpage
+  ot.write_csv
   puts "Done".green
 elsif options[:orcids]
   options[:orcids].each do |orcid|

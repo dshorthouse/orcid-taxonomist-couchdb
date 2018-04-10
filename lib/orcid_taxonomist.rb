@@ -27,8 +27,9 @@ class OrcidTaxonomist
     des.save
   end
 
-  def populate_taxonomists
-    (search_orcids.to_a - existing_orcids).each do |orcid|
+  def populate_taxonomists(doi = nil)
+    found_orcids = !doi.nil? ? search_orcids_by_doi(doi) : search_orcids_by_keyword
+    (found_orcids.to_a - existing_orcids).each do |orcid|
       o = orcid_metadata(orcid)
       doc = {
         "_id" => orcid,
@@ -157,18 +158,37 @@ class OrcidTaxonomist
     end
   end
 
-  def search_orcids
+  def search_orcids_by_keyword
     keyword_parameter = URI::encode(ORCID_KEYWORDS.map{ |k| "keyword:#{k}" }.join(" OR "))
     Enumerator.new do |yielder|
-      start = 1
+      start = 0
 
       loop do
         orcid_search_url = "#{ORCID_API}/search?q=#{keyword_parameter}&start=#{start}&rows=200"
         req = Typhoeus.get(orcid_search_url, headers: orcid_header)
         results = JSON.parse(req.body, symbolize_names: true)[:result]
-        if results
+        if results.size > 0
           results.map { |item| yielder << item[:"orcid-identifier"][:path] }
           start += 200
+        else
+          raise StopIteration
+        end
+      end
+    end.lazy
+  end
+
+  def search_orcids_by_doi(doi)
+    doi_parameter = URI::encode("doi-self:#{doi}")
+    Enumerator.new do |yielder|
+      start = 0
+
+      loop do
+        orcid_search_url = "#{ORCID_API}/search?q=#{doi_parameter}&start=#{start}&rows=50"
+        req = Typhoeus.get(orcid_search_url, headers: orcid_header)
+        results = JSON.parse(req.body, symbolize_names: true)[:result]
+        if results.size > 0
+          results.map { |item| yielder << item[:"orcid-identifier"][:path] }
+          start += 50
         else
           raise StopIteration
         end
