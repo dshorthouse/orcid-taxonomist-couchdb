@@ -42,11 +42,11 @@ class OrcidTaxonomist
         "family_name" => o[:family_name],
         "other_names" => o[:other_names],
         "country" => o[:country],
+        "taxa" => [],
+        "dois" => [],
         "orcid_created" => o[:orcid_created],
         "orcid_updated" => o[:orcid_updated],
-        "status" => 0,
-        "taxa" => [],
-        "dois" => []
+        "status" => 0
       }
       @db.save_doc(doc)
     end
@@ -56,6 +56,8 @@ class OrcidTaxonomist
     new_orcids.each do |o|
       works = orcid_works(o)
       doc = @db.get(o)
+      doc[:taxa] = []
+      doc[:dois] = []
       if works.size > 0
         doc[:taxa] = gnrd_names(works.map{ |w| w[:title] }.join(" "))
         doc[:dois] = works.map{ |w| w[:doi] }.compact
@@ -131,7 +133,7 @@ class OrcidTaxonomist
     json = JSON.parse(req.body, symbolize_names: true)
     given_names = json[:name][:"given-names"][:value] rescue nil
     family_name = json[:name][:"family-name"][:value] rescue nil
-    other_names = json[:"other-names"][:"other-name"].map{|o| o[:content]} rescue nil
+    other_names = json[:"other-names"][:"other-name"].map{|o| o[:content]} rescue []
     country = json[:addresses][:address][0][:country][:value] rescue nil
     orcid_created = json[:name][:"created-date"][:value] rescue nil
     orcid_updated = json[:"last-modified-date"][:value] rescue nil
@@ -214,6 +216,8 @@ class OrcidTaxonomist
     doc["other_names"] = o[:other_names]
     doc["country"] = o[:country]
     doc["orcid_updated"] = o[:orcid_updated]
+    doc["taxa"] = []
+    doc["dois"] = []
     works = orcid_works(o[:orcid])
     if works.size > 0
       doc["taxa"] = gnrd_names(works.map{ |w| w[:title] }.join(" "))
