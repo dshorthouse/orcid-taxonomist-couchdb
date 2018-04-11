@@ -18,13 +18,15 @@ html lang="en"
     script async=true src="https://www.googletagmanager.com/gtag/js?id=#{google_analytics}"
 
     javascript:
-      var numTaxonomists = #{{country_counts}};
-      var countryNames = #{{country_names}};
+      var countryData = #{{country_data}};
+      var mapRegions = {};
+
       $(function() {
         var table = $('#taxonomists').DataTable({
           order: [[1, "asc"]],
           pageLength: 100
         });
+        $.map(countryData, function(k,v) { mapRegions[v] = k.count; });
         $('#map-modal').on('shown.bs.modal', function (e) {
           var map = $('#world-map')
           if (map.children().length === 0) {
@@ -33,17 +35,21 @@ html lang="en"
                 backgroundColor: '#eee',
                 series: {
                   regions: [{
-                    values: numTaxonomists,
+                    values: mapRegions,
                     scale: ['#C8EEFF', '#0071A4'],
                     normalizeFunction: 'polynomial'
                   }]
                 },
                 onRegionTipShow: function(e, el, code) {
-                  el.html(el.html()+' ('+numTaxonomists[code]+')');
+                  count = 0
+                  if (countryData.hasOwnProperty(code)) {
+                    count = countryData[code].count;
+                  }
+                  el.html(el.html()+' ('+count+')');
                 },
                 onRegionClick: function(e, code) {
-                  $('#taxonomists_filter').find('input').val(countryNames[code]);
-                  table.search(countryNames[code]).draw();
+                  $('#taxonomists_filter').find('input').val(countryData[code].name);
+                  table.search(countryData[code].name).draw();
                   $('#map-modal').modal('toggle');
                 }
               });

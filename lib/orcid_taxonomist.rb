@@ -214,12 +214,10 @@ class OrcidTaxonomist
       '?' => '\?',
       ':' => '\:'
     }
-
     clean_doi = doi.gsub(/[#{lucene_chars.keys.join('\\')}]/, lucene_chars)
 
     Enumerator.new do |yielder|
       start = 0
-
       loop do
         orcid_search_url = "#{ORCID_API}/search?q=doi-self:#{clean_doi}&start=#{start}&rows=50"
         req = Typhoeus.get(orcid_search_url, headers: orcid_header)
@@ -266,19 +264,21 @@ class OrcidTaxonomist
        .map{|d| d["key"]}
   end
 
+  def all_countries
+    @db.view('taxonomist/by_country', :group_level => 1)['rows']
+        .map{ |t| [t["key"],{ name: IsoCountryCodes.find(t["key"]).name, count: t["value"] }] }
+        .to_h
+  end
+
   def existing_orcids
     @db.all_docs["rows"]
        .map{|d| d["id"] if d["id"][0] != "_"}.compact
   end
 
   def output
-    country_counts = @db.view('taxonomist/by_country', :group_level => 1)['rows']
-                        .map{ |t| [t["key"],t["value"]] }.to_h
-    country_names = country_counts.keys.map{ |t| [t, IsoCountryCodes.find(t).name] }.to_h
     data = {
       google_analytics: @config[:google_analytics],
-      country_counts: country_counts.to_json,
-      country_names: country_names.to_json,
+      country_data: all_countries.to_json,
       entries: []
     }
     all_taxonomists.each do |row|
