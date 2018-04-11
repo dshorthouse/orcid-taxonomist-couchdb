@@ -192,14 +192,35 @@ class OrcidTaxonomist
   end
 
   def search_orcids_by_doi(doi)
-    doi_parameter = URI::encode("doi-self:#{doi}")
+    lucene_chars = {
+      '+' => '\+',
+      '-' => '\-',
+      '&' => '\&',
+      '|' => '\|',
+      '!' => '\!',
+      '(' => '\(',
+      ')' => '\)',
+      '{' => '\{',
+      '}' => '\}',
+      '[' => '\[',
+      ']' => '\]',
+      '^' => '\^',
+      '"' => '\"',
+      '~' => '\~',
+      '*' => '\*',
+      '?' => '\?',
+      ':' => '\:'
+    }
+
+    clean_doi = doi.gsub(/[#{lucene_chars.keys.join('\\')}]/, lucene_chars)
+
     Enumerator.new do |yielder|
       start = 0
 
       loop do
-        orcid_search_url = "#{ORCID_API}/search?q=#{doi_parameter}&start=#{start}&rows=50"
+        orcid_search_url = "#{ORCID_API}/search?q=doi-self:#{clean_doi}&start=#{start}&rows=50"
         req = Typhoeus.get(orcid_search_url, headers: orcid_header)
-        results = JSON.parse(req.body, symbolize_names: true)[:result]
+        results = JSON.parse(req.body, symbolize_names: true)[:result] rescue []
         if results.size > 0
           results.map { |item| yielder << item[:"orcid-identifier"][:path] }
           start += 50
