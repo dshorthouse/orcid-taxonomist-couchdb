@@ -20,10 +20,12 @@ class OrcidTaxonomist
     des.merge!({"language" => "javascript"})
     new_taxonomist_map = "function(doc) { if(doc.status == 0) { emit(null, doc.orcid); } }"
     updated_taxonomist_map = "function(doc) { if(doc.status == 1) { emit(null, doc); } }"
+    taxonomists_taxa_map = "function(doc) { if(doc.status == 1 && doc.taxa.length > 0) { emit(null, doc); } }"
     country_map = "function(doc) { if(doc.country) { emit(doc.country, 1); }}"
     dois_map = "function(doc) { doc.dois && doc.dois.forEach(function(doi) { emit(doi, 1); }); }"
     des.view_by :new_taxonomists_orcid, :map => new_taxonomist_map
     des.view_by :updated_taxonomists, :map => updated_taxonomist_map
+    des.view_by :taxonomists_with_taxa, :map => taxonomists_taxa_map
     des.view_by :country, :map => country_map, :reduce => "_sum"
     des.view_by :dois, :map => dois_map, :reduce => "_sum"
     des.database = @db
@@ -232,6 +234,23 @@ class OrcidTaxonomist
     end.lazy
   end
 
+  def search_orcids_by_text
+    Enumerator.new do |yielder|
+      start = 0
+      loop do
+        orcid_search_url = "#{ORCID_API}/search?q=(text%3Ataxonomy%20AND%20text%3An.%20sp.)&start=#{start}&rows=200"
+        req = Typhoeus.get(orcid_search_url, headers: orcid_header)
+        results = JSON.parse(req.body, symbolize_names: true)[:result] rescue []
+        if results.size > 0
+          results.map { |item| yielder << item[:"orcid-identifier"][:path] }
+          start += 200
+        else
+          raise StopIteration
+        end
+      end
+    end.lazy
+  end
+
   def update_doc(doc, o)
     doc["given_names"] = o[:given_names]
     doc["family_name"] = o[:family_name]
@@ -259,6 +278,12 @@ class OrcidTaxonomist
        .sort_alphabetical_by{|k| k["family_name"]}
   end
 
+  def all_taxonomists_with_taxa
+    @db.view('taxonomist/by_taxonomists_with_taxa')['rows']
+       .map{|t| t["value"]}.compact
+       .sort_alphabetical_by{|k| k["family_name"]}
+  end
+
   def all_dois
     @db.view('taxonomist/by_dois', :group_level => 1)['rows']
        .map{|d| d["key"]}
@@ -281,7 +306,7 @@ class OrcidTaxonomist
       country_data: all_countries.to_json,
       entries: []
     }
-    all_taxonomists.each do |row|
+    all_taxonomists_with_taxa.each do |row|
       row.symbolize_keys!
       if row[:country]
         code = IsoCountryCodes.find(row[:country])
