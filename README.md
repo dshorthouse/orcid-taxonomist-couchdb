@@ -24,8 +24,10 @@ Clone the repository:
 
 Adjust contents of config.yml.sample and rename it to config.yml. Install dependencies.
 
-``gem install bundler
-bundle install``
+```
+gem install bundler
+bundle install
+```
 
 Initialize the CouchDB database and create the included design document with views:
 
