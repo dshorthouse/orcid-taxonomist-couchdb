@@ -3,7 +3,6 @@
 class OrcidTaxonomist
 
   ORCID_API = "https://pub.orcid.org/v2.1"
-  ORCID_KEYWORDS = ["taxonomy", "taxonomist", "nomenclature", "systematics"]
   GNRD_API = "http://gnrd.globalnames.org/name_finder.json"
 
   def initialize args
@@ -173,7 +172,11 @@ class OrcidTaxonomist
   end
 
   def search_orcids_by_keyword
-    keyword_parameter = URI::encode(ORCID_KEYWORDS.map{ |k| "keyword:#{k}" }.join(" OR "))
+    if !@config[:orcid_keywords] || !@config[:orcid_keywords].is_a?(Array)
+      raise ArgumentError, 'ORCID keywords to search on not in config.yml' 
+    end
+
+    keyword_parameter = URI::encode(@config[:orcid_keywords].map{ |k| "keyword:#{k}" }.join(" OR "))
     Enumerator.new do |yielder|
       start = 0
 

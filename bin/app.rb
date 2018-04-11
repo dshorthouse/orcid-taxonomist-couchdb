@@ -26,23 +26,23 @@ optparse = OptionParser.new do |opts|
     options[:config] = config
   end
 
-  opts.on("-s", "--search", "Search for new records on ORCID") do
+  opts.on("-s", "--search", "Add new ORCID records, tagged with keywords") do
     options[:search] = true
   end
 
-  opts.on("-w", "--works [DOIS]", Array, "Add ORCID records based on search for DOI of works") do |works|
+  opts.on("-w", "--works [DOIS]", Array, "Add ORCID records based on search for DOI of works in comma-separated list") do |works|
     options[:works] = works
   end
 
-  opts.on("-o", "--orcids [ORCIDS]", Array, "Update existing ORCID records or save new ones") do |orcids|
+  opts.on("-o", "--orcids [ORCIDS]", Array, "Update existing ORCID records or save new ones in comma-separated list") do |orcids|
     options[:orcids] = orcids
   end
 
-  opts.on("-d", "--delete [ORCID]", String, "Delete a single ORCID") do |orcid|
+  opts.on("-d", "--delete [ORCID]", String, "Delete a single document using ORCID id") do |orcid|
     options[:delete] = orcid
   end
 
-  opts.on("-u", "--update", "Update all existing records") do
+  opts.on("-u", "--update", "Update all existing records from profiles on ORCID") do
     options[:update] = true
   end
 end.parse!
