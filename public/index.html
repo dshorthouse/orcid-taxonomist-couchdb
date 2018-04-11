@@ -1,21 +1,22 @@
 <!DOCTYPE html><html lang="en"><head><title>World Taxonomists and Systematists</title><meta charset="utf-8" /><meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport" /><meta content="NOINDEX, NOFOLLOW" name="ROBOTS" /><link crossorigin="anonymous" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" rel="stylesheet" /><link href="https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap.min.css" rel="stylesheet" /><link href="css/jquery-jvectormap-2.0.3.css" rel="stylesheet" /><link href="css/stylesheet.css" rel="stylesheet" /><script src="https://code.jquery.com/jquery-1.12.4.js"></script><script crossorigin="anonymous" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script><script src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap.min.js"></script><script src="js/jquery-jvectormap-2.0.3.min.js"></script><script src="js/jquery-jvectormap-world-mill.js"></script><script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-946452-15"></script><script>var countryData = {"AR":{"name":"Argentina","count":44},"AT":{"name":"Austria","count":18},"AU":{"name":"Australia","count":96},"BD":{"name":"Bangladesh","count":5},"BE":{"name":"Belgium","count":13},"BG":{"name":"Bulgaria","count":7},"BO":{"name":"Bolivia (Plurinational State of)","count":2},"BR":{"name":"Brazil","count":315},"BT":{"name":"Bhutan","count":8},"CA":{"name":"Canada","count":35},"CH":{"name":"Switzerland","count":18},"CL":{"name":"Chile","count":10},"CN":{"name":"China","count":45},"CO":{"name":"Colombia","count":50},"CR":{"name":"Costa Rica","count":2},"CU":{"name":"Cuba","count":5},"CY":{"name":"Cyprus","count":1},"CZ":{"name":"Czechia","count":33},"DE":{"name":"Germany","count":70},"DK":{"name":"Denmark","count":12},"DZ":{"name":"Algeria","count":2},"EC":{"name":"Ecuador","count":16},"EE":{"name":"Estonia","count":2},"EG":{"name":"Egypt","count":23},"ES":{"name":"Spain","count":143},"ET":{"name":"Ethiopia","count":1},"FI":{"name":"Finland","count":15},"FR":{"name":"France","count":35},"GA":{"name":"Gabon","count":1},"GB":{"name":"United Kingdom of Great Britain and Northern Ireland","count":87},"GE":{"name":"Georgia","count":1},"GR":{"name":"Greece","count":7},"GT":{"name":"Guatemala","count":1},"GW":{"name":"Guinea-Bissau","count":1},"HK":{"name":"Hong Kong","count":11},"HR":{"name":"Croatia","count":4},"HU":{"name":"Hungary","count":14},"ID":{"name":"Indonesia","count":14},"IE":{"name":"Ireland","count":3},"IL":{"name":"Israel","count":4},"IN":{"name":"India","count":117},"IQ":{"name":"Iraq","count":3},"IR":{"name":"Iran (Islamic Republic of)","count":31},"IT":{"name":"Italy","count":85},"JO":{"name":"Jordan","count":1},"JP":{"name":"Japan","count":27},"KE":{"name":"Kenya","count":2},"KR":{"name":"Korea (Republic of)","count":11},"LK":{"name":"Sri Lanka","count":6},"LT":{"name":"Lithuania","count":1},"LU":{"name":"Luxembourg","count":2},"MA":{"name":"Morocco","count":2},"MG":{"name":"Madagascar","count":3},"MT":{"name":"Malta","count":1},"MX":{"name":"Mexico","count":81},"MY":{"name":"Malaysia","count":12},"MZ":{"name":"Mozambique","count":1},"NC":{"name":"New Caledonia","count":2},"NG":{"name":"Nigeria","count":8},"NL":{"name":"Netherlands","count":16},"NO":{"name":"Norway","count":10},"NP":{"name":"Nepal","count":2},"NZ":{"name":"New Zealand","count":19},"PA":{"name":"Panama","count":3},"PE":{"name":"Peru","count":23},"PH":{"name":"Philippines","count":6},"PK":{"name":"Pakistan","count":6},"PL":{"name":"Poland","count":38},"PR":{"name":"Puerto Rico","count":1},"PT":{"name":"Portugal","count":89},"PY":{"name":"Paraguay","count":2},"QA":{"name":"Qatar","count":1},"RE":{"name":"Réunion","count":1},"RO":{"name":"Romania","count":6},"RS":{"name":"Serbia","count":12},"RU":{"name":"Russian Federation","count":67},"SA":{"name":"Saudi Arabia","count":5},"SE":{"name":"Sweden","count":27},"SG":{"name":"Singapore","count":4},"SI":{"name":"Slovenia","count":1},"SK":{"name":"Slovakia","count":2},"SY":{"name":"Syrian Arab Republic","count":1},"SZ":{"name":"Swaziland","count":1},"TH":{"name":"Thailand","count":6},"TN":{"name":"Tunisia","count":2},"TR":{"name":"Turkey","count":33},"TW":{"name":"Taiwan","count":11},"UA":{"name":"Ukraine","count":18},"US":{"name":"United States of America","count":169},"UY":{"name":"Uruguay","count":5},"VE":{"name":"Venezuela (Bolivarian Republic of)","count":7},"VN":{"name":"Viet Nam","count":1},"ZA":{"name":"South Africa","count":45},"ZM":{"name":"Zambia","count":1}};
-var mapRegions = {};
 
 $(function() {
   var table = $('#taxonomists').DataTable({
     order: [[1, "asc"]],
     pageLength: 100
   });
-  $.map(countryData, function(k,v) { mapRegions[v] = k.count; });
   $('#map-modal').on('shown.bs.modal', function (e) {
-    var map = $('#world-map')
+    var map = $('#world-map');
     if (map.children().length === 0) {
         map.vectorMap({
           map: 'world_mill',
           backgroundColor: '#eee',
           series: {
             regions: [{
-              values: mapRegions,
+              values: Object.keys(countryData).reduce(function(result,item) {
+                result[item] = countryData[item].count;
+                return result; 
+              }, {}),
               scale: ['#C8EEFF', '#0071A4'],
               normalizeFunction: 'polynomial'
             }]
@@ -28,8 +29,10 @@ $(function() {
             el.html(el.html()+' ('+count+')');
           },
           onRegionClick: function(e, code) {
-            $('#taxonomists_filter').find('input').val(countryData[code].name);
-            table.search(countryData[code].name).draw();
+            if (countryData.hasOwnProperty(code)) {
+              $('#taxonomists_filter').find('input').val(countryData[code].name);
+              table.search(countryData[code].name).draw();
+            }
             $('#map-modal').modal('toggle');
           }
         });

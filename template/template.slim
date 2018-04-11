@@ -19,23 +19,24 @@ html lang="en"
 
     javascript:
       var countryData = #{{country_data}};
-      var mapRegions = {};
 
       $(function() {
         var table = $('#taxonomists').DataTable({
           order: [[1, "asc"]],
           pageLength: 100
         });
-        $.map(countryData, function(k,v) { mapRegions[v] = k.count; });
         $('#map-modal').on('shown.bs.modal', function (e) {
-          var map = $('#world-map')
+          var map = $('#world-map');
           if (map.children().length === 0) {
               map.vectorMap({
                 map: 'world_mill',
                 backgroundColor: '#eee',
                 series: {
                   regions: [{
-                    values: mapRegions,
+                    values: Object.keys(countryData).reduce(function(result,item) {
+                      result[item] = countryData[item].count;
+                      return result; 
+                    }, {}),
                     scale: ['#C8EEFF', '#0071A4'],
                     normalizeFunction: 'polynomial'
                   }]
@@ -48,8 +49,10 @@ html lang="en"
                   el.html(el.html()+' ('+count+')');
                 },
                 onRegionClick: function(e, code) {
-                  $('#taxonomists_filter').find('input').val(countryData[code].name);
-                  table.search(countryData[code].name).draw();
+                  if (countryData.hasOwnProperty(code)) {
+                    $('#taxonomists_filter').find('input').val(countryData[code].name);
+                    table.search(countryData[code].name).draw();
+                  }
                   $('#map-modal').modal('toggle');
                 }
               });
