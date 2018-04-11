@@ -22,6 +22,15 @@ Clone the repository:
 
 `git clone git@github.com:dshorthouse/orcid-taxonomist-couchdb.git`
 
+Navigate into the cloned directory via the console and verify that ruby 2.4.1 is being used & the gemset called orcid-taxonomist was created.
+
+```
+cd orcid-taxonomist-couchdb
+which ruby
+rvm gemset name
+rvm gemset dir
+```
+
 Adjust contents of config.yml.sample and rename it to config.yml. Install dependencies.
 
 ```
