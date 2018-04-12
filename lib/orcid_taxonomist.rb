@@ -19,8 +19,8 @@ class OrcidTaxonomist
     des.name = "taxonomist"
     des.merge!({"language" => "javascript"})
     new_taxonomist_map = "function(doc) { if(doc.status == 0) { emit(null, doc.orcid); } }"
-    updated_taxonomist_map = "function(doc) { if(doc.status == 1) { emit(null, doc); } }"
-    taxonomists_taxa_map = "function(doc) { if(doc.status == 1 && doc.taxa.length > 0) { emit(null, doc); } }"
+    updated_taxonomist_map = "function(doc) { if(doc.status == 1 && doc.family_name.length > 0) { emit(null, doc); } }"
+    taxonomists_taxa_map = "function(doc) { if(doc.status == 1 && doc.family_name.length > 0 && doc.taxa.length > 0) { emit(null, doc); } }"
     country_map = "function(doc) { if(doc.country) { emit(doc.country, 1); }}"
     dois_map = "function(doc) { doc.dois && doc.dois.forEach(function(doi) { emit(doi, 1); }); }"
     des.view_by :new_taxonomists_orcid, :map => new_taxonomist_map
@@ -306,7 +306,7 @@ class OrcidTaxonomist
       country_data: all_countries.to_json,
       entries: []
     }
-    all_taxonomists_with_taxa.each do |row|
+    all_taxonomists.each do |row|
       row.symbolize_keys!
       if row[:country]
         code = IsoCountryCodes.find(row[:country])
