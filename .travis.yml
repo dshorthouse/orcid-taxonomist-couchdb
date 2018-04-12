@@ -3,6 +3,8 @@ rvm:
   - 2.4
 before_install:
   - gem update bundler
+before_script:
+  - sudo cp config.yml.sample config.yml
 branches:
   only:
       - master
