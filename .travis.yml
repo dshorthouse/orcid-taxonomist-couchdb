@@ -8,7 +8,6 @@ before_install:
 before_script:
   - sudo cp config.yml.sample config.yml
   - curl -X PUT localhost:5984/orcid_taxonomist
-  - sudo ./bin/app.rb -i
 branches:
   only:
       - master
