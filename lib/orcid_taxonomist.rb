@@ -73,11 +73,12 @@ class OrcidTaxonomist
   def write_csv
     csv_file = File.join(root, 'public', 'taxonomists.csv')
     CSV.open(csv_file, 'w') do |csv|
-      csv << ["given_names", "family_name", "orcid", "country", "taxa"]
+      csv << ["given_names", "family_name", "other_names", "orcid", "country", "taxa"]
       output[:entries].each do |entry|
         csv << [
           entry[:given_names],
           entry[:family_name],
+          entry[:other_names],
           entry[:orcid],
           entry[:country],
           entry[:taxa]
