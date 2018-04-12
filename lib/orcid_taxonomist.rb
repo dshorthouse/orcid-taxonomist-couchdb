@@ -55,18 +55,17 @@ class OrcidTaxonomist
   end
 
   def populate_from_file(file)
-    dois = []
-    orcids = []
+    orcids = Set.new
     CSV.foreach(file, headers: false, encoding: 'bom|utf-8') do |row|
       if row[0].is_doi?
         search_orcids_by_doi(row[0]).each do |orcid|
-          orcids << orcid
+          orcids.add(orcid)
         end
       elsif row[0].is_orcid?
-        orcids << row[0]
+        orcids.add(row[0])
       end
     end
-    (orcids - existing_orcids).each do |orcid|
+    (orcids.to_a - existing_orcids).each do |orcid|
       save_new_orcid(orcid)
     end
   end

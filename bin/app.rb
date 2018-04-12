@@ -79,7 +79,7 @@ elsif options[:file]
   ot.populate_from_file(options[:file])
   ot.populate_taxa
   ot.write_webpage
-  ot.wite_csv
+  ot.write_csv
   puts "Done".green
 elsif options[:delete]
   ot.delete_taxonomist(options[:delete])
