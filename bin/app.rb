@@ -38,6 +38,10 @@ optparse = OptionParser.new do |opts|
     options[:orcids] = orcids
   end
 
+  opts.on("-f", "--file [FILE]", String, "Add ORCID records through addition of a csv file whose first column is DOIs or ORCIDs") do |file|
+    options[:file] = file
+  end
+
   opts.on("-d", "--delete [ORCID]", String, "Delete a single document using ORCID id") do |orcid|
     options[:delete] = orcid
   end
@@ -70,6 +74,12 @@ elsif options[:orcids]
   end
   ot.write_webpage
   ot.write_csv
+  puts "Done".green
+elsif options[:file]
+  ot.populate_from_file(options[:file])
+  ot.populate_taxa
+  ot.write_webpage
+  ot.wite_csv
   puts "Done".green
 elsif options[:delete]
   ot.delete_taxonomist(options[:delete])

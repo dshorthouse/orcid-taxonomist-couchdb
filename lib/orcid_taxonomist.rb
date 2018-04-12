@@ -35,21 +35,7 @@ class OrcidTaxonomist
   def populate_taxonomists(doi = nil)
     found_orcids = !doi.nil? ? search_orcids_by_doi(doi) : search_orcids_by_keyword
     (found_orcids.to_a - existing_orcids).each do |orcid|
-      o = orcid_metadata(orcid)
-      doc = {
-        "_id" => orcid,
-        "orcid" => orcid,
-        "given_names" => o[:given_names],
-        "family_name" => o[:family_name],
-        "other_names" => o[:other_names],
-        "country" => o[:country],
-        "taxa" => [],
-        "dois" => [],
-        "orcid_created" => o[:orcid_created],
-        "orcid_updated" => o[:orcid_updated],
-        "status" => 0
-      }
-      @db.save_doc(doc)
+      save_new_orcid(orcid)
     end
   end
 
@@ -68,12 +54,35 @@ class OrcidTaxonomist
     end
   end
 
+  def populate_from_file(file)
+    dois = []
+    orcids = []
+    CSV.foreach(file, headers: false, encoding: 'bom|utf-8') do |row|
+      if row[0].is_doi?
+        search_orcids_by_doi(row[0]).each do |orcid|
+          orcids << orcid
+        end
+      elsif row[0].is_orcid?
+        orcids << row[0]
+      end
+    end
+    (orcids - existing_orcids).each do |orcid|
+      save_new_orcid(orcid)
+    end
+  end
+
   def write_csv
     csv_file = File.join(root, 'public', 'taxonomists.csv')
     CSV.open(csv_file, 'w') do |csv|
       csv << ["given_names", "family_name", "orcid", "country", "taxa"]
       output[:entries].each do |entry|
-        csv << [entry[:given_names], entry[:family_name], entry[:orcid], entry[:country], entry[:taxa]]
+        csv << [
+          entry[:given_names],
+          entry[:family_name],
+          entry[:orcid],
+          entry[:country],
+          entry[:taxa]
+        ]
       end
     end
   end
@@ -149,6 +158,24 @@ class OrcidTaxonomist
     }
   end
 
+  def save_new_orcid(orcid)
+    o = orcid_metadata(orcid)
+    doc = {
+      "_id" => orcid,
+      "orcid" => orcid,
+      "given_names" => o[:given_names],
+      "family_name" => o[:family_name],
+      "other_names" => o[:other_names],
+      "country" => o[:country],
+      "taxa" => [],
+      "dois" => [],
+      "orcid_created" => o[:orcid_created],
+      "orcid_updated" => o[:orcid_updated],
+      "status" => 0
+    }
+    @db.save_doc(doc)
+  end
+
   def orcid_works(orcid)
     orcid_url = "#{ORCID_API}/#{orcid}/works"
     req = Typhoeus.get(orcid_url, headers: orcid_header)
@@ -216,7 +243,7 @@ class OrcidTaxonomist
       '?' => '\?',
       ':' => '\:'
     }
-    clean_doi = doi.gsub(/[#{lucene_chars.keys.join('\\')}]/, lucene_chars)
+    clean_doi = URI::encode(doi.gsub(/[#{lucene_chars.keys.join('\\')}]/, lucene_chars))
 
     Enumerator.new do |yielder|
       start = 0
@@ -227,23 +254,6 @@ class OrcidTaxonomist
         if results.size > 0
           results.map { |item| yielder << item[:"orcid-identifier"][:path] }
           start += 50
-        else
-          raise StopIteration
-        end
-      end
-    end.lazy
-  end
-
-  def search_orcids_by_text
-    Enumerator.new do |yielder|
-      start = 0
-      loop do
-        orcid_search_url = "#{ORCID_API}/search?q=(text%3Ataxonomy%20AND%20text%3An.%20sp.)&start=#{start}&rows=200"
-        req = Typhoeus.get(orcid_search_url, headers: orcid_header)
-        results = JSON.parse(req.body, symbolize_names: true)[:result] rescue []
-        if results.size > 0
-          results.map { |item| yielder << item[:"orcid-identifier"][:path] }
-          start += 200
         else
           raise StopIteration
         end
