@@ -65,7 +65,6 @@ class OrcidTaxonomist
         orcids.add(row[0])
       end
     end
-    byebug
     (orcids.to_a - existing_orcids).each do |orcid|
       save_new_orcid(orcid)
     end
