@@ -2,6 +2,7 @@ ORCID Taxonomist
 ===============================================
 
 [![DOI](https://zenodo.org/badge/126773540.svg)](https://zenodo.org/badge/latestdoi/126773540)
+[![Build Status](https://travis-ci.org/dshorthouse/orcid-taxonomist-couchdb.svg?branch=master)](https://travis-ci.org/dshorthouse/orcid-taxonomist-couchdb)
 
 Ruby application that queries the ORCID API for user profiles containing keyword 'taxonomist', 'taxonomy', 'nomenclature', or 'systematics' then feeds the titles of their linked works to the Global Names Recognition and Discovery service to indicate the ORCID account holder's area of taxonomic expertise. Other data come from [ZooBank](http://zoobank.org/), thanks to [Rich Pyle](https://github.com/deepreef).
 
