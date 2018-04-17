@@ -49,6 +49,10 @@ optparse = OptionParser.new do |opts|
   opts.on("-u", "--update", "Update all existing records from profiles on ORCID") do
     options[:update] = true
   end
+
+  opts.on("-r", "--rebuild", "Rebuild all existing records from profiles on ORCID") do
+    options[:update] = true
+  end
 end.parse!
 
 config_file = options[:config] if options[:config]
@@ -94,9 +98,13 @@ else
     ot.write_csv
     puts "Done".green
   end
-
   if options[:update]
     ot.update_taxonomists
+    ot.write_webpage
+    ot.write_csv
+    puts "Done".green
+  elsif options[:rebuild]
+    ot.rebuild_taxonomists
     ot.write_webpage
     ot.write_csv
     puts "Done".green

@@ -121,6 +121,14 @@ class OrcidTaxonomist
     end
   end
 
+  def rebuild_taxonomists
+    all_taxonomists.each do |row|
+      doc = @db.get(row["orcid"])
+      o = orcid_metadata(row["orcid"])
+      @db.save_doc(update_doc(doc, o))
+    end
+  end
+
   private
 
   def root
@@ -176,13 +184,19 @@ class OrcidTaxonomist
     @db.save_doc(doc)
   end
 
+  def extract_doi(text)
+    regex = /(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?![%"#?{} ])\S)+)/i
+    matched = regex.match(text)
+    matched[1] if matched
+  end
+
   def orcid_works(orcid)
     orcid_url = "#{ORCID_API}/#{orcid}/works"
     req = Typhoeus.get(orcid_url, headers: orcid_header)
     json = JSON.parse(req.body, symbolize_names: true)
     json[:group].map do |a|
       ids = a[:"work-summary"][0][:"external-ids"][:"external-id"] rescue []
-      doi = ids.map{ |d| d[:"external-id-value"] if d[:"external-id-type"] == "doi" }
+      doi = ids.map{ |d| extract_doi(d[:"external-id-value"]) if d[:"external-id-type"] == "doi" }
                .compact.first rescue nil
       title = a[:"work-summary"][0][:title][:title][:value] rescue nil
       { title: title, doi: doi }
