@@ -51,7 +51,7 @@ optparse = OptionParser.new do |opts|
   end
 
   opts.on("-r", "--rebuild", "Rebuild all existing records from profiles on ORCID") do
-    options[:update] = true
+    options[:rebuild] = true
   end
 end.parse!
 
@@ -92,8 +92,8 @@ elsif options[:delete]
   puts "Done".green
 else
   if options[:search]
-    ot.populate_taxonomists
-    ot.populate_taxa
+#    ot.populate_taxonomists
+#    ot.populate_taxa
     ot.write_webpage
     ot.write_csv
     puts "Done".green

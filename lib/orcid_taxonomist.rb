@@ -15,21 +15,21 @@ class OrcidTaxonomist
   end
 
   def create_design_document
-    des = CouchRest::Design.new
-    des.name = "taxonomist"
-    des.merge!({"language" => "javascript"})
+    d = CouchRest::Design.new
+    d.name = "taxonomist"
+    d.merge!({"language" => "javascript"})
     new_taxonomist_map = "function(doc) { if(doc.status == 0) { emit(null, doc.orcid); } }"
     updated_taxonomist_map = "function(doc) { if(doc.status == 1 && doc.family_name.length > 0) { emit(null, doc); } }"
     taxonomists_taxa_map = "function(doc) { if(doc.status == 1 && doc.family_name.length > 0 && doc.taxa.length > 0) { emit(null, doc); } }"
     country_map = "function(doc) { if(doc.country) { emit(doc.country, 1); }}"
     dois_map = "function(doc) { doc.dois && doc.dois.forEach(function(doi) { emit(doi, 1); }); }"
-    des.view_by :new_taxonomists_orcid, :map => new_taxonomist_map
-    des.view_by :updated_taxonomists, :map => updated_taxonomist_map
-    des.view_by :taxonomists_with_taxa, :map => taxonomists_taxa_map
-    des.view_by :country, :map => country_map, :reduce => "_sum"
-    des.view_by :dois, :map => dois_map, :reduce => "_sum"
-    des.database = @db
-    des.save
+    d.view_by :new_taxonomists_orcid, :map => new_taxonomist_map
+    d.view_by :updated_taxonomists, :map => updated_taxonomist_map
+    d.view_by :taxonomists_with_taxa, :map => taxonomists_taxa_map
+    d.view_by :country, :map => country_map, :reduce => "_sum"
+    d.view_by :dois, :map => dois_map, :reduce => "_sum"
+    d.database = @db
+    d.save
   end
 
   def populate_taxonomists(doi = nil)
@@ -70,31 +70,6 @@ class OrcidTaxonomist
     end
   end
 
-  def write_csv
-    csv_file = File.join(root, 'public', 'taxonomists.csv')
-    CSV.open(csv_file, 'w') do |csv|
-      csv << ["given_names", "family_name", "other_names", "orcid", "country", "taxa"]
-      output[:entries].each do |entry|
-        csv << [
-          entry[:given_names],
-          entry[:family_name],
-          entry[:other_names],
-          entry[:orcid],
-          entry[:country],
-          entry[:taxa]
-        ]
-      end
-    end
-  end
-
-  def write_webpage
-    template = File.join(root, 'template', "template.slim")
-    web_page = File.join(root, 'public', 'index.html')
-    html = Slim::Template.new(template).render(Object.new, output)
-    File.open(web_page, 'w') { |file| file.write(html) }
-    html
-  end
-
   def delete_taxonomist(orcid)
     doc = @db.get(orcid)
     @db.delete_doc(doc)
@@ -122,11 +97,41 @@ class OrcidTaxonomist
   end
 
   def rebuild_taxonomists
+    count = all_taxonomists.count
     all_taxonomists.each do |row|
+      puts count.to_s.green if count % 10 == 0
       doc = @db.get(row["orcid"])
       o = orcid_metadata(row["orcid"])
       @db.save_doc(update_doc(doc, o))
+      count -= 1
     end
+  end
+
+  def write_csv
+    csv_file = File.join(root, 'public', 'taxonomists.csv')
+    CSV.open(csv_file, 'w') do |csv|
+      csv << ["given_names", "family_name", "other_names", "orcid", "country", "country_code", "taxa"]
+      all_taxonomists.each do |entry|
+        country = IsoCountryCodes.find(entry["country"]).name rescue nil
+        csv << [
+          entry["given_names"],
+          entry["family_name"],
+          entry["other_names"].join("; "),
+          entry["orcid"],
+          country,
+          entry["country"],
+          entry["taxa"].join("; ")
+        ]
+      end
+    end
+  end
+
+  def write_webpage
+    template = File.join(root, 'template', "template.slim")
+    web_page = File.join(root, 'public', 'index.html')
+    html = Slim::Template.new(template).render(Object.new, output)
+    File.open(web_page, 'w') { |file| file.write(html) }
+    html
   end
 
   private
@@ -325,22 +330,11 @@ class OrcidTaxonomist
   end
 
   def output
-    data = {
+    {
       google_analytics: @config[:google_analytics],
       country_data: all_countries.to_json,
-      entries: []
+      num_taxonomists: all_taxonomists.count
     }
-    all_taxonomists.each do |row|
-      row.symbolize_keys!
-      if row[:country]
-        code = IsoCountryCodes.find(row[:country])
-        row[:country] = code.name if code
-      end
-      row[:taxa] = row[:taxa].join(", ")
-      row[:other_names] = row[:other_names].join("; ")
-      data[:entries] << row
-    end
-    data
   end
 
 end

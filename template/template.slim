@@ -56,7 +56,7 @@ html lang="en"
           | .
         p.lede
           | Current total: 
-          strong #{entries.count}
+          strong #{num_taxonomists}
           br
           | Started 2018-03-19 in the spirit of  
           a href="https://twitter.com/hashtag/taxonomistappreciationday" #TaxonomistAppreciationDay
@@ -81,17 +81,14 @@ html lang="en"
             th{style="width:35%"} Speciality
             th(style="width:25%") ORCID
         tbody
-          - entries.each do |entry|
-            tr
-              td = entry[:given_names]
-              td = entry[:family_name]
-              td = entry[:other_names]
-              td = entry[:country]
-              td = entry[:taxa]
-              td
-                a href="https://orcid.org/#{entry[:orcid]}"
-                  img.id-icon alt="ORCID iD icon" src="img/id-icon.svg" width="16"
-                  | https://orcid.org/#{entry[:orcid]}
+          tr
+            td
+            td
+            td
+            td
+            td
+            td
+
 
       #map-modal.modal.fade tabindex="-1" role="dialog" aria-labelledby="mapLabel"
         .modal-dialog role="document"
