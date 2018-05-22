@@ -9,7 +9,7 @@ $(function() {
     processing: true,
     serverSide: true,
     order: [[1, "asc"]],
-    pageLength: 100,
+    pageLength: 25,
     ajax: {
       type: "POST",
       contentType: "application/json",
@@ -55,11 +55,11 @@ $(function() {
       }
     },
     columns: [
-      { data: "given_names" },
-      { data: "family_name" },
-      { data: "other_names" },
-      { data: "country_name" },
-      { data: "taxa" },
+      { data: "given_names", "defaultContent": "" },
+      { data: "family_name", "defaultContent": "" },
+      { data: "other_names", "defaultContent": "" },
+      { data: "country_name", "defaultContent": "" },
+      { data: "taxa", "defaultContent": "" },
       { data: "orcid" }
     ],
     columnDefs: [

@@ -1,29 +1,32 @@
 development:
   server: 'http://127.0.0.1:5984'
+  public_server: 'http://127.0.0.1:5984'
   database: orcid_taxonomist
   orcid_keywords: 
       - taxonomy
       - taxonomist
       - nomenclature
       - systematics
-  google_analytics: 'UA-XXXXXX-XX'
+  google_analytics: 'UA-xxxxxx-xx'
 
 test:
   server: 'http://127.0.0.1:5984'
+  public_server: 'http://127.0.0.1:5984'
   database: orcid_taxonomist
   orcid_keywords: 
       - taxonomy
       - taxonomist
       - nomenclature
       - systematics
-  google_analytics: 'UA-XXXXXX-XX'
+  google_analytics: 'UA-xxxxxx-xx'
 
 production:
   server: 'http://127.0.0.1:5984'
+  public_server: 'http://127.0.0.1:5984'
   database: orcid_taxonomist
   orcid_keywords: 
       - taxonomy
       - taxonomist
       - nomenclature
       - systematics
-  google_analytics: 'UA-XXXXXX-XX'
+  google_analytics: 'UA-xxxxxx-xx'
