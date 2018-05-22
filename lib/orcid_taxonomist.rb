@@ -18,16 +18,16 @@ class OrcidTaxonomist
     d = CouchRest::Design.new
     d.name = "taxonomist"
     d.merge!({"language" => "javascript"})
+
     new_taxonomist_map = "function(doc) { if(doc.status == 0) { emit(null, doc.orcid); } }"
-    updated_taxonomist_map = "function(doc) { if(doc.status == 1 && doc.family_name.length > 0) { emit(null, doc); } }"
-    taxonomists_taxa_map = "function(doc) { if(doc.status == 1 && doc.family_name.length > 0 && doc.taxa.length > 0) { emit(null, doc); } }"
-    country_map = "function(doc) { if(doc.country) { emit(doc.country, 1); }}"
-    dois_map = "function(doc) { doc.dois && doc.dois.forEach(function(doi) { emit(doi, 1); }); }"
-    d.view_by :new_taxonomists_orcid, :map => new_taxonomist_map
+    d.view_by :new_taxonomists, :map => new_taxonomist_map
+
+    updated_taxonomist_map = "function(doc) { if(doc.status == 1) { emit(null, doc); } }"
     d.view_by :updated_taxonomists, :map => updated_taxonomist_map
-    d.view_by :taxonomists_with_taxa, :map => taxonomists_taxa_map
-    d.view_by :country, :map => country_map, :reduce => "_sum"
-    d.view_by :dois, :map => dois_map, :reduce => "_sum"
+
+    country_code_sum = "function(doc) { if(doc.status == 1 && doc.country) { emit(doc.country, 1); }}"
+    d.view_by :country_code, :map => country_code_sum, :reduce => "_sum"
+
     d.database = @db
     d.save
   end
@@ -40,7 +40,7 @@ class OrcidTaxonomist
   end
 
   def populate_taxa
-    new_orcids.each do |o|
+    new_taxonomists.each do |o|
       works = orcid_works(o)
       doc = @db.get(o)
       doc[:taxa] = []
@@ -110,17 +110,17 @@ class OrcidTaxonomist
   def write_csv
     csv_file = File.join(root, 'public', 'taxonomists.csv')
     CSV.open(csv_file, 'w') do |csv|
-      csv << ["given_names", "family_name", "other_names", "orcid", "country", "country_code", "taxa"]
+      csv << ["given_names", "family_name", "other_names", "orcid", "country_name", "country_code", "taxa", "dois"]
       all_taxonomists.each do |entry|
-        country = IsoCountryCodes.find(entry["country"]).name rescue nil
         csv << [
           entry["given_names"],
           entry["family_name"],
           entry["other_names"].join("; "),
           entry["orcid"],
-          country,
+          entry["country_name"],
           entry["country"],
-          entry["taxa"].join("; ")
+          entry["taxa"].join("; "),
+          entry["dois"].join(", ")
         ]
       end
     end
@@ -158,6 +158,7 @@ class OrcidTaxonomist
     family_name = json[:name][:"family-name"][:value] rescue nil
     other_names = json[:"other-names"][:"other-name"].map{|o| o[:content]} rescue []
     country = json[:addresses][:address][0][:country][:value] rescue nil
+    country_name = IsoCountryCodes.find(country).name rescue nil
     orcid_created = json[:name][:"created-date"][:value] rescue nil
     orcid_updated = json[:"last-modified-date"][:value] rescue nil
     {
@@ -166,6 +167,7 @@ class OrcidTaxonomist
       family_name: family_name,
       other_names: other_names,
       country: country,
+      country_name: country_name,
       orcid_created: orcid_created,
       orcid_updated: orcid_updated
     }
@@ -173,6 +175,7 @@ class OrcidTaxonomist
 
   def save_new_orcid(orcid)
     o = orcid_metadata(orcid)
+    country_name = IsoCountryCodes.find(o[:country]).name rescue nil
     doc = {
       "_id" => orcid,
       "orcid" => orcid,
@@ -180,6 +183,7 @@ class OrcidTaxonomist
       "family_name" => o[:family_name],
       "other_names" => o[:other_names],
       "country" => o[:country],
+      "country_name" => country_name,
       "taxa" => [],
       "dois" => [],
       "orcid_created" => o[:orcid_created],
@@ -281,10 +285,12 @@ class OrcidTaxonomist
   end
 
   def update_doc(doc, o)
+    country_name = IsoCountryCodes.find(o[:country]).name rescue nil
     doc["given_names"] = o[:given_names]
     doc["family_name"] = o[:family_name]
     doc["other_names"] = o[:other_names]
     doc["country"] = o[:country]
+    doc["country_name"] = country_name
     doc["orcid_updated"] = o[:orcid_updated]
     doc["taxa"] = []
     doc["dois"] = []
@@ -296,8 +302,8 @@ class OrcidTaxonomist
     doc
   end
 
-  def new_orcids
-    @db.view('taxonomist/by_new_taxonomists_orcid')['rows']
+  def new_taxonomists
+    @db.view('taxonomist/by_new_taxonomists')['rows']
        .map{|t| t["value"]}.compact
   end
 
@@ -307,19 +313,8 @@ class OrcidTaxonomist
        .sort_alphabetical_by{|k| k["family_name"]}
   end
 
-  def all_taxonomists_with_taxa
-    @db.view('taxonomist/by_taxonomists_with_taxa')['rows']
-       .map{|t| t["value"]}.compact
-       .sort_alphabetical_by{|k| k["family_name"]}
-  end
-
-  def all_dois
-    @db.view('taxonomist/by_dois', :group_level => 1)['rows']
-       .map{|d| d["key"]}
-  end
-
   def all_countries
-    @db.view('taxonomist/by_country', :group_level => 1)['rows']
+    @db.view('taxonomist/by_country_code', :group_level => 1)['rows']
         .map{ |t| [t["key"],{ name: IsoCountryCodes.find(t["key"]).name, count: t["value"] }] }
         .to_h
   end
@@ -331,6 +326,7 @@ class OrcidTaxonomist
 
   def output
     {
+      couch_url: "#{@config[:public_server]}/#{@config[:database]}/",
       google_analytics: @config[:google_analytics],
       country_data: all_countries.to_json,
       num_taxonomists: all_taxonomists.count

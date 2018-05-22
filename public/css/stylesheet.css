@@ -50,3 +50,11 @@
   vertical-align:middle;
   border-style:none;
 }
+
+#taxonomists_info{
+  display:none;
+}
+
+#taxonomists_paginate{
+  margin-bottom:5em;
+}
