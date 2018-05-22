@@ -10,7 +10,7 @@ Requirements
 ------------
 - Linux-based OS
 - ruby 2.4.1
-- CouchDB
+- CouchDB 2.1+
 
 Set-Up
 ------
@@ -46,6 +46,32 @@ Initialize the CouchDB database and create the included design document with vie
 View all options for the command-line app:
 
 `./bin/app.rb -h`
+
+Create two CouchDB indices on family\_name and another on country\_name to permit sorting as follows:
+
+```
+{
+   "index": {
+      "fields": [
+         "family_name"
+      ]
+   },
+   "name": "family-index",
+   "type": "json"
+}
+```
+
+```
+{
+   "index": {
+      "fields": [
+         "country_name"
+      ]
+   },
+   "name": "country-name-index",
+   "type": "json"
+}
+```
 
 License
 -------
