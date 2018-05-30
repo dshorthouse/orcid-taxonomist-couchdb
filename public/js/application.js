@@ -30,9 +30,7 @@ $(function() {
         var search = $.map(d.search["value"].replace(/[\.]/g, "").split(""), function(d) {
           return "[" + d.toUpperCase() + "|" + d.toLowerCase() + "]";
         }).join("");
-        d.selector = { 
-          "status" : 1,
-          "$or" : [
+        var or_clause = { "$or" : [
             { "family_name" : { "$regex" : "^" + search + "" } },
             { "given_names" : { "$regex" : "^" + search + "" } },
             { "other_names" : { "$elemMatch" : { "$regex" : "^" + search + "" } } },
@@ -40,6 +38,16 @@ $(function() {
             { "taxa" : { "$elemMatch" : { "$regex" : "" + search + "" } } }
           ]
         };
+        d.selector = { 
+          "status" : 1,
+          "$and" : [
+            { "family_name" : { "$ne" : null } },
+            { "family_name" : { "$ne" : "" } }
+          ]
+        }
+        if (search) { 
+          $.extend(d.selector, or_clause);
+        }
         delete(d["columns"]);
         delete(d["draw"]);
         delete(d["start"]);
