@@ -3,7 +3,7 @@
 class OrcidTaxonomist
 
   ORCID_API = "https://pub.orcid.org/v2.1"
-  GNRD_API = "http://gnrd.globalnames.org/name_finder.json"
+  GNRD_API = "https://gnrd.globalnames.org/name_finder.json"
 
   def initialize args
     args.each do |k,v|
