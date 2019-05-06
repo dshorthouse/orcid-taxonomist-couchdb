@@ -93,6 +93,7 @@ class OrcidTaxonomist
       if doc["orcid_updated"] != o[:orcid_updated]
         @db.save_doc(update_doc(doc, o))
       end
+      puts row["family_name"].strip.green
     end
   end
 
@@ -154,10 +155,10 @@ class OrcidTaxonomist
     orcid_url = "#{ORCID_API}/#{orcid}/person"
     req = Typhoeus.get(orcid_url, headers: orcid_header)
     json = JSON.parse(req.body, symbolize_names: true)
-    given_names = json[:name][:"given-names"][:value] rescue nil
-    family_name = json[:name][:"family-name"][:value] rescue nil
-    other_names = json[:"other-names"][:"other-name"].map{|o| o[:content]} rescue []
-    country = json[:addresses][:address][0][:country][:value] rescue nil
+    given_names = json[:name][:"given-names"][:value].strip rescue nil
+    family_name = json[:name][:"family-name"][:value].strip rescue nil
+    other_names = json[:"other-names"][:"other-name"].map{|o| o[:content].strip } rescue []
+    country = json[:addresses][:address][0][:country][:value].strip rescue nil
     country_name = IsoCountryCodes.find(country).name rescue nil
     orcid_created = json[:name][:"created-date"][:value] rescue nil
     orcid_updated = json[:"last-modified-date"][:value] rescue nil
@@ -200,16 +201,20 @@ class OrcidTaxonomist
   end
 
   def orcid_works(orcid)
+    works = []
     orcid_url = "#{ORCID_API}/#{orcid}/works"
     req = Typhoeus.get(orcid_url, headers: orcid_header)
     json = JSON.parse(req.body, symbolize_names: true)
-    json[:group].map do |a|
-      ids = a[:"work-summary"][0][:"external-ids"][:"external-id"] rescue []
-      doi = ids.map{ |d| extract_doi(d[:"external-id-value"]) if d[:"external-id-type"] == "doi" }
-               .compact.first rescue nil
-      title = a[:"work-summary"][0][:title][:title][:value] rescue nil
-      { title: title, doi: doi }
+    if json[:group] && json[:group].size > 0
+      works = json[:group].map do |a|
+        ids = a[:"work-summary"][0][:"external-ids"][:"external-id"] rescue []
+        doi = ids.map{ |d| extract_doi(d[:"external-id-value"]) if d[:"external-id-type"] == "doi" }
+                 .compact.first rescue nil
+        title = a[:"work-summary"][0][:title][:title][:value] rescue nil
+        { title: title, doi: doi }
+      end
     end
+    works
   end
 
   def gnrd_names(text)
