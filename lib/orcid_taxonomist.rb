@@ -93,7 +93,7 @@ class OrcidTaxonomist
       if doc["orcid_updated"] != o[:orcid_updated]
         @db.save_doc(update_doc(doc, o))
       end
-      puts row["family_name"].strip.green
+      puts row["family_name"].strip.green if row["family_name"]
     end
   end
 
